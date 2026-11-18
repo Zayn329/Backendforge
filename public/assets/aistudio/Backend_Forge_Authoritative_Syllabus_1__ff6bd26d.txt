@@ -1,0 +1,977 @@
+BACKEND FORGE — AUTHORITATIVE BACKEND ENGINEERING SYLLABUS
+Version: 1.0
+
+PURPOSE
+This file is the single source of truth for Backend Forge's curriculum.
+Implement the blocks, sub-blocks, topic names, numbering, order, and learning-mode assignments exactly as written.
+Do not add, remove, rename, merge, split, or reorder curriculum items.
+Do not treat examples or implementation details as new syllabus topics.
+
+LEARNING MODE KEY
+FPT = First Principles Thinking
+Recipe = practical implementation workflow
+Syntax = concise syntax/reference learning
+Mixed labels (such as FPT + Recipe) mean both modes are required for that sub-block.
+Concept + Recipe and Practical labels are preserved as specified.
+
+BLOCK 0 — TYPESCRIPT FOR BACKEND ENGINEERING
+
+0.1 — Type System Fundamentals [FPT]
+- JavaScript runtime values vs TypeScript compile-time types
+- Structural typing and type compatibility
+- Type narrowing and control-flow analysis
+- Union and discriminated union types
+
+0.2 — Type Abstraction & Asynchronous Contracts [FPT]
+- Generics and generic constraints
+- Async functions and Promise types
+- Error modeling and typed results
+
+0.3 — TypeScript Utility Types [Recipe]
+- Pick
+- Omit
+- Partial
+- Record
+- ReturnType
+
+0.4 — Modules & Configuration [Syntax]
+- Modules: ESM and CommonJS
+- Environment variables
+- Type-safe configuration
+
+
+BLOCK 1 — OPERATING SYSTEMS AND NODE.JS RUNTIME
+
+1.1 — How Programs Execute [FPT]
+- What is a program?
+- What happens when an executable is started?
+- What is a process?
+- How does the OS allocate resources to a process?
+- Process memory layout
+- Stack vs heap
+- Virtual memory fundamentals
+- What happens when a process terminates?
+
+1.2 — Threads and Concurrency [FPT]
+- Why were threads introduced?
+- Process vs thread
+- Shared vs separate memory
+- Context switching
+- Thread scheduling
+- Race conditions
+- Locks and synchronization
+- Concurrency vs parallelism
+
+1.3 — JavaScript Execution [FPT]
+- What is an execution context?
+- Call stack
+- Heap and object references
+- How V8 executes JavaScript
+- JIT compilation fundamentals
+- Garbage collection
+- Memory leaks
+- Heap snapshots
+
+1.4 — Asynchronous Execution [FPT]
+- Why blocking execution creates problems
+- Synchronous vs asynchronous I/O
+- Event-driven programming
+- Event loop
+- Task queues and microtask queues
+- Promise scheduling
+- process.nextTick()
+- libuv
+- Thread pool
+- Worker Threads
+- Event-loop blocking and starvation
+
+1.5 — Node.js Production Architecture [FPT]
+- Node.js process lifecycle
+- Single-process execution
+- Cluster and multi-process models
+- CPU-bound vs I/O-bound workloads
+- Graceful shutdown
+- Signals and process management
+- Uncaught exceptions and unhandled rejections
+
+
+BLOCK 2 — NETWORKING AND HTTP INTERNALS
+
+2.1 — Network Fundamentals [FPT]
+- Why computers need networking
+- Client-server communication
+- IP addresses
+- Ports
+- DNS and domain resolution
+- Network sockets
+- TCP vs UDP
+- TCP connection lifecycle
+- Three-way handshake
+- Flow control and congestion control
+- Retransmissions and timeouts
+
+2.2 — Secure Communication [FPT]
+- Why encryption is needed
+- Symmetric vs asymmetric cryptography
+- Public and private keys
+- Certificates and certificate authorities
+- TLS handshake
+- Certificate verification
+- HTTPS connection establishment
+
+2.3 — HTTP Protocol [FPT]
+- Why HTTP was designed
+- Request/response architecture
+- HTTP request structure
+- HTTP response structure
+- Headers, body and methods
+- Status codes
+- Statelessness
+- HTTP/1.1
+- Keep-alive and persistent connections
+- HTTP/2 multiplexing
+- HTTP/3 and QUIC fundamentals
+- Compression and transfer encoding
+- Streaming responses
+- Connection timeouts
+
+2.4 — How a Request Travels [FPT]
+- Reconstruct the complete flow: Frontend → DNS → TCP → TLS → HTTP request → Backend server
+
+
+BLOCK 3 — NODE.JS SERVER AND API ARCHITECTURE
+
+3.1 — HTTP Server Mechanics [FPT]
+- What is an HTTP server?
+- What does a server listen on?
+- How does a server accept connections?
+- How is an HTTP request parsed?
+- Request and response objects
+- Request lifecycle
+- Response completion
+- Connection closure
+
+3.2 — Request Processing Pipeline [FPT]
+- What is routing?
+- How URLs are matched to handlers
+- Middleware architecture
+- Middleware execution order
+- Request context
+- Validation
+- Authentication middleware
+- Error handling
+- Response serialization
+- Request cancellation and timeouts
+
+3.3 — REST API Design [FPT]
+- What is a resource?
+- Resource-oriented URL design
+- HTTP method semantics
+- Safe vs idempotent operations
+- Status code selection
+- Request and response contracts
+- Pagination
+- Filtering and sorting
+- API versioning
+- Backward compatibility
+
+3.4 — API Correctness [FPT + Recipe]
+- Runtime validation vs TypeScript types
+- Schema validation
+- Zod
+- DTOs
+- Standardized error formats
+- OpenAPI fundamentals
+- API documentation
+- Contract changes
+
+
+BLOCK 4 — RELATIONAL DATABASES AND SQL
+
+4.1 — Why Databases Exist [FPT]
+- Why in-memory application state is insufficient
+- Persistence
+- Data consistency
+- Data relationships
+- Database management systems
+- Relational vs non-relational databases
+- Why relational databases are useful
+
+4.2 — Relational Data Modeling [FPT]
+- Tables, rows and columns
+- Attributes and data types
+- Primary keys
+- Foreign keys
+- One-to-one relationships
+- One-to-many relationships
+- Many-to-many relationships
+- Referential integrity
+- Constraints
+- Unique and check constraints
+
+4.3 — SQL Fundamentals [Recipe]
+- CREATE and ALTER
+- INSERT
+- SELECT
+- WHERE
+- UPDATE and DELETE
+- Sorting and grouping
+- Aggregate functions
+- Joins
+- Subqueries
+- Common Table Expressions
+- Window functions
+
+4.4 — Database Normalization [FPT]
+- Update anomalies
+- Insertion anomalies
+- Deletion anomalies
+- Functional dependencies
+- First Normal Form
+- Second Normal Form
+- Third Normal Form
+- Denormalization and trade-offs
+
+4.5 — Database Migrations [Recipe]
+- Why schemas evolve
+- Schema versioning
+- Migration files
+- Applying migrations
+- Reverting migrations
+- Safe schema changes
+- Data migrations
+
+
+BLOCK 5 — DATABASE INTERNALS, TRANSACTIONS AND CONCURRENCY
+
+5.1 — The Transaction Problem [FPT]
+- Concurrent modification of records
+- Inconsistent independent queries
+- What is a transaction?
+- Transaction boundaries
+- Commit and rollback
+- ACID properties
+
+5.2 — Concurrency Anomalies [FPT]
+- Lost updates
+- Dirty reads
+- Non-repeatable reads
+- Phantom reads
+- Write skew
+- Race conditions
+- Deadlocks
+
+5.3 — Database Concurrency Control [FPT]
+- Why locking is required
+- Shared and exclusive locks
+- Row-level vs table-level locks
+- Optimistic concurrency control
+- Pessimistic concurrency control
+- Multi-Version Concurrency Control
+- PostgreSQL MVCC
+- Snapshot visibility
+- Isolation levels
+- Serialization failures
+
+5.4 — Database Physical Storage [FPT]
+- Pages and blocks
+- Database tuples
+- Heap storage
+- Buffer cache
+- Disk I/O
+- Write-Ahead Logging
+- Crash recovery fundamentals
+
+5.5 — Indexing Mechanics [FPT]
+- Why searching every row becomes expensive
+- Search complexity intuition
+- B-tree structure
+- B+ tree fundamentals
+- Index traversal
+- Composite indexes
+- Unique indexes
+- Partial indexes
+- Covering indexes
+- Index selectivity and cardinality
+- Index write overhead
+
+5.6 — Query Execution [FPT + Recipe]
+- SQL parsing
+- Query planning
+- Query optimization
+- Execution plans
+- Sequential scan
+- Index scan
+- Joins and join strategies
+- EXPLAIN
+- EXPLAIN ANALYZE
+- N+1 query problem
+
+5.7 — Connection Management [FPT + Recipe]
+- Database connections
+- Connection establishment cost
+- Connection pooling
+- Pool sizing
+- Pool exhaustion
+- Prepared statements
+- Connection timeouts
+
+
+BLOCK 6 — AUTHENTICATION, AUTHORIZATION AND SECURITY
+
+6.1 — Security Fundamentals [FPT]
+- Trust boundaries
+- Attack surfaces
+- CIA triad
+- Authentication vs authorization
+- Least privilege
+- Defense in depth
+- Threat modeling
+
+6.2 — Authentication Mechanics [FPT + Recipe]
+- Identity representation
+- Password storage problem
+- Hashing vs encryption
+- Salting
+- bcrypt and Argon2id
+- Session-based authentication
+- Cookies
+- Secure, HttpOnly and SameSite
+- Session expiration and invalidation
+- JWT structure and signature verification
+- Access and refresh tokens
+- Token rotation and revocation
+- OAuth 2.0
+- OpenID Connect
+
+6.3 — Authorization Mechanics [FPT]
+- Identity vs permissions
+- Role-Based Access Control
+- Attribute-Based Access Control
+- Resource-level authorization
+- Ownership checks
+- Permission inheritance
+- Tenant isolation
+- Policy enforcement
+- IDOR prevention
+
+6.4 — Application Security [FPT]
+- SQL injection
+- Parameterized queries
+- Cross-site scripting
+- CSRF
+- CORS and preflight requests
+- SSRF
+- Path traversal
+- Command injection
+- Deserialization vulnerabilities
+- Input validation and output encoding
+
+6.5 — Production Security [Concept + Recipe]
+- Rate limiting
+- Brute-force protection
+- API quotas
+- Secret management
+- Key rotation
+- Audit logging
+- Request size limits
+- Security headers
+- Dependency vulnerability scanning
+
+
+BLOCK 7 — BACKEND ARCHITECTURE AND CODE ORGANIZATION
+
+7.1 — Growing Application Complexity [FPT]
+- Why putting everything in one file does not scale
+- Separation of concerns
+- Coupling
+- Cohesion
+- Abstraction
+- Dependency management
+- Dependency inversion
+
+7.2 — Layered Backend Architecture [FPT + Recipe]
+- Presentation layer
+- Application/service layer
+- Domain/business logic layer
+- Data access layer
+- Infrastructure layer
+- Controller vs service responsibilities
+- Repository pattern
+- DTOs and mapping
+- Dependency injection
+
+7.3 — Modular Monolith Architecture [FPT]
+- What is a monolith?
+- Why a monolith can be difficult to maintain
+- Module boundaries
+- Feature-based organization
+- Internal module communication
+- Dependency boundaries
+- Shared infrastructure
+- Preventing circular dependencies
+- Modular monolith vs microservices
+
+7.4 — Domain-Driven Design Fundamentals [FPT]
+- What is a domain?
+- Ubiquitous language
+- Entities
+- Value objects
+- Aggregates
+- Aggregate roots
+- Domain services
+- Repositories
+- Bounded contexts
+
+7.5 — Architecture Patterns [FPT]
+- Clean Architecture
+- Hexagonal Architecture
+- Ports and adapters
+- Inversion of Control
+- Strategy pattern
+- Adapter pattern
+- Factory pattern
+- Observer pattern
+- When abstractions become overengineering
+
+
+BLOCK 8 — TESTING, CI/CD AND SHIPPING YOUR FIRST PRODUCT
+
+8.1 — Testing Fundamentals [FPT + Recipe]
+- Why software requires testing
+- Unit testing
+- Integration testing
+- End-to-end testing
+- Test isolation
+- Mocks, stubs and fakes
+- Test fixtures
+- Deterministic tests
+- Regression testing
+- Contract testing
+
+8.2 — Backend Testing [Recipe]
+- Testing service logic
+- Testing API endpoints
+- Testing database interactions
+- Testing authentication
+- Testing authorization
+- Testing concurrent operations
+- Testing failure scenarios
+- Integration testing with real PostgreSQL using Testcontainers
+
+8.3 — Application Configuration [Recipe]
+- Environment variables
+- Configuration validation
+- Development vs production environments
+- Secrets
+- Runtime configuration
+- Database migrations during deployment
+
+8.4 — Containerization [FPT + Recipe]
+- Why containers exist
+- Virtual machines vs containers
+- Container isolation
+- Docker images
+- Layers
+- Dockerfiles
+- Volumes
+- Networking
+- Docker Compose
+- Multi-stage builds
+
+8.5 — Deployment [Concept + Recipe]
+- Build and startup process
+- Deploying an application
+- Managed PostgreSQL
+- Environment configuration
+- Health checks
+- Graceful shutdown
+- Logs
+- Database backups
+- HTTPS and domain configuration
+
+8.6 — CI/CD [FPT + Recipe]
+- Continuous integration
+- Continuous delivery
+- Build pipelines
+- Test automation
+- Migration checks
+- Deployment automation
+- Secrets in CI/CD
+- Rollbacks
+
+
+BLOCK 9 — ASYNCHRONOUS PROCESSING AND BACKGROUND JOBS
+
+9.1 — Synchronous Processing Limitations [FPT]
+- Request-response execution
+- Long-running operations
+- Request timeouts
+- Why blocking users is problematic
+- Asynchronous execution
+- Task delegation
+
+9.2 — Producer-Consumer Architecture [FPT]
+- Producer
+- Consumer
+- Message
+- Queue
+- Queue lifecycle
+- Worker architecture
+- Multiple workers
+- Job state management
+
+9.3 — Job Reliability [FPT + Recipe]
+- Job retries
+- Exponential backoff
+- Duplicate execution
+- Idempotency
+- Dead-letter queues
+- Job prioritization
+- Delayed jobs
+- Scheduled jobs
+- Failed job recovery
+- Graceful worker shutdown
+
+9.4 — Transactional Messaging [FPT]
+- Dual-write problem
+- Database transaction vs message publishing
+- Transactional outbox
+- Inbox pattern
+- Delivery guarantees
+- Eventual consistency
+
+9.5 — File Storage and Processing [FPT + Recipe]
+- Application server file storage limitations
+- Object storage fundamentals
+- S3 architecture
+- Multipart uploads
+- Streaming uploads
+- Pre-signed URLs
+- File validation and security
+- Background media processing
+- Resumable uploads
+
+
+BLOCK 10 — CACHING AND REDIS ARCHITECTURE
+
+10.1 — Why Caching Exists [FPT]
+- Repeated computation
+- Expensive database queries
+- Network latency
+- Memory vs disk access
+- Cache hits and misses
+- Cache locality
+
+10.2 — Caching Strategies [FPT]
+- Cache-aside
+- Read-through
+- Write-through
+- Write-behind
+- TTL
+- Cache invalidation
+- Stale data
+- Cache stampedes
+- Cache penetration
+- Cache warming
+
+10.3 — Redis Fundamentals [FPT + Recipe]
+- In-memory storage
+- Redis data structures
+- Strings
+- Hashes
+- Lists
+- Sets
+- Sorted sets
+- Expiration
+- Atomic operations
+- Persistence
+- Eviction policies
+- Redis transactions
+- Lua scripting
+
+10.4 — Distributed Caching [FPT]
+- Multiple backend instances
+- Shared cache
+- Cache consistency
+- Distributed invalidation
+- Distributed locks
+- Lock expiration and failure cases
+
+10.5 — Rate Limiting [FPT + Recipe]
+- Why rate limiting is required
+- Fixed window
+- Sliding window
+- Token bucket
+- Leaky bucket
+- Redis-backed rate limiting
+- Identity-based and IP-based limits
+
+
+BLOCK 11 — REAL-TIME SYSTEMS AND MESSAGING
+
+11.1 — Request-Response Limitations [FPT]
+- Client polling
+- Short polling
+- Long polling
+- Server-Sent Events
+- WebSockets
+- Persistent connections
+- Bidirectional communication
+
+11.2 — WebSocket Architecture [FPT + Recipe]
+- Connection establishment
+- Upgrade mechanism
+- Connection lifecycle
+- Heartbeats
+- Reconnection
+- Message delivery
+- Presence
+- Broadcasting
+- Connection management
+- Authentication and authorization over real-time connections
+
+11.3 — Messaging Architecture [FPT]
+- Direct service communication
+- Publisher-subscriber architecture
+- Event-driven architecture
+- Message brokers
+- Message ordering
+- Delivery semantics
+- Consumer groups
+- Dead-letter processing
+
+11.4 — Message Broker Internals [FPT + Recipe]
+RabbitMQ:
+- Queues
+- Exchanges
+- Routing
+- Acknowledgements
+Kafka:
+- Topics
+- Partitions
+- Offsets
+- Consumer groups
+- Retained logs
+
+
+BLOCK 12 — PERFORMANCE, OBSERVABILITY AND RELIABILITY
+
+12.1 — Performance Fundamentals [FPT]
+- Latency vs throughput
+- Concurrency
+- Requests per second
+- Resource utilization
+- Saturation
+- p50, p95 and p99 latency
+- Bottleneck identification
+
+12.2 — Node.js Profiling [FPT + Recipe]
+- CPU profiling
+- Heap profiling
+- Garbage collection pauses
+- Event-loop lag
+- Memory leaks
+- Worker Thread performance
+- Stream and buffer performance
+
+12.3 — Database Profiling [FPT + Recipe]
+- Slow query identification
+- Query plans
+- Index optimization
+- Lock contention
+- Connection pool tuning
+- N+1 query optimization
+- Query batching
+
+12.4 — Observability [FPT + Recipe]
+- Why logs alone are insufficient
+- Structured logging
+- Correlation IDs
+- Application metrics
+- Infrastructure metrics
+- Distributed traces
+- Trace and span relationships
+- Context propagation
+- Sampling
+- OpenTelemetry
+
+12.5 — Reliability [FPT]
+- Timeouts
+- Retry strategies
+- Circuit breakers
+- Bulkheads
+- Backpressure
+- Load shedding
+- Graceful degradation
+- Health and readiness checks
+- Graceful shutdown
+
+12.6 — Reliability Measurement [FPT]
+- Service Level Indicators
+- Service Level Objectives
+- Service Level Agreements
+- Error budgets
+- Incident response
+- Root cause analysis
+- Postmortems
+- Backup and recovery
+- RPO and RTO
+
+
+BLOCK 13 — DISTRIBUTED SYSTEMS AND ADVANCED SYSTEM DESIGN
+
+13.1 — Distributed Systems Fundamentals [FPT]
+- Why distribute a system?
+- Independent machines
+- Network communication
+- Partial failures
+- Network partitions
+- Latency variability
+- Clock synchronization
+- Fault tolerance
+- Failure detection
+
+13.2 — Distributed Consistency [FPT]
+- Strong consistency
+- Eventual consistency
+- Consistency models
+- CAP theorem
+- Replication
+- Replication lag
+- Read replicas
+- Conflict resolution
+- Data ownership
+
+13.3 — Scaling Architecture [FPT]
+- Vertical scaling
+- Horizontal scaling
+- Stateless services
+- Load balancing
+- Database replication
+- Partitioning
+- Sharding
+- Distributed caching
+- Connection management across instances
+- Capacity planning
+
+13.4 — Distributed Transactions [FPT]
+- Why local transactions aren't sufficient across services
+- Two-phase commit
+- Saga pattern
+- Compensating transactions
+- Transactional outbox
+- Eventual consistency across services
+- Idempotency across distributed operations
+
+13.5 — Service Architecture [FPT]
+- Service boundaries
+- Service ownership
+- Service discovery
+- API gateways
+- Synchronous communication
+- Asynchronous communication
+- Database-per-service
+- Independent deployment
+- Distributed tracing
+- Failure isolation
+
+13.6 — Architectural Patterns [FPT]
+- Microservices
+- CQRS
+- Event sourcing
+- Event-driven architecture
+- API gateway pattern
+- Saga orchestration vs choreography
+- Read replicas and dedicated read models
+
+
+BLOCK 14 — CLOUD INFRASTRUCTURE AND ADVANCED OPERATIONS
+
+14.1 — Linux Server Engineering [FPT + Recipe]
+- Processes and signals
+- File permissions
+- Networking
+- System services
+- Resource limits
+- Disk usage
+- Logs
+- SSH
+- Server troubleshooting
+
+14.2 — Networking Infrastructure [FPT]
+- Private and public networks
+- Subnets
+- Routing
+- Firewalls
+- Security groups
+- DNS configuration
+- Reverse proxies
+- TLS termination
+- Load balancers
+
+14.3 — AWS Architecture [Concept + Recipe]
+- IAM
+- VPC
+- EC2
+- S3
+- RDS
+- Application Load Balancer
+- CloudWatch
+- SQS and SNS
+- ElastiCache
+- ECS with Fargate
+- Secrets Manager
+- Availability zones and regions
+
+14.4 — Infrastructure as Code [FPT + Recipe]
+- Why manually configuring infrastructure becomes problematic
+- Declarative infrastructure
+- Terraform providers
+- Resources
+- Variables
+- Outputs
+- Modules
+- State management
+- Infrastructure drift
+
+14.5 — Advanced Deployment [FPT + Recipe]
+- Rolling deployments
+- Blue-green deployment
+- Canary deployment
+- Zero-downtime deployments
+- Database migration compatibility
+- Rollback strategies
+- Feature flags
+- Infrastructure monitoring
+
+14.6 — Container Orchestration [FPT + Recipe]
+- Why orchestration exists
+- Kubernetes architecture
+- Pods
+- Deployments
+- Services
+- Ingress
+- ConfigMaps and Secrets
+- Health probes
+- Resource limits
+- Horizontal Pod Autoscaling
+
+
+BLOCK 15 — OPEN SOURCE AND LARGE-CODEBASE ENGINEERING
+
+15.1 — Codebase Exploration [FPT + Practical]
+- Repository anatomy
+- Entry points
+- Dependency graphs
+- Module boundaries
+- Configuration flow
+- Request execution flow
+- Tracing function calls
+- Understanding unfamiliar abstractions
+- Reading tests to understand expected behavior
+
+15.2 — Code Quality [FPT]
+- SOLID principles
+- Coupling and cohesion
+- Refactoring
+- Technical debt
+- Naming and API design
+- Backward compatibility
+- Error handling conventions
+- Abstraction boundaries
+- Maintainability trade-offs
+
+15.3 — Contribution Workflow [Practical]
+- Understanding contribution guidelines
+- Issues and bug reports
+- Reproducing problems
+- Identifying root causes
+- Creating regression tests
+- Making minimal changes
+- Pull requests
+- Code reviews
+- Resolving reviewer feedback
+- Handling breaking changes
+
+15.4 — Architecture Communication [Recipe + Practical]
+- Component diagrams
+- Sequence diagrams
+- Entity Relationship Diagrams
+- Data-flow diagrams
+- Architecture Decision Records
+- Technical proposals
+- Pull request descriptions
+- Incident reports
+
+
+BLOCK 16 — AI-NATIVE BACKEND AND AGENTIC ENGINEERING
+
+16.1 — AI-Assisted Development [Concept + Practical]
+- Context engineering
+- Repository-level instructions
+- Task decomposition
+- Spec-driven development
+- Planning vs implementation
+- Managing agent context
+- Reviewing generated code
+- Independent verification
+
+16.2 — Agentic Coding Systems [FPT]
+- Tool calling
+- Tool permissions
+- Execution environments
+- Agent state
+- Multi-step execution
+- Parallel agents
+- Failure recovery
+- Human approval boundaries
+- Sandboxing
+
+16.3 — AI-Assisted Engineering [Practical]
+- Architecture review
+- Code review
+- Security review
+- Automated test generation
+- Regression testing
+- Database migration review
+- Performance investigation
+- Debugging
+- Documentation generation
+
+16.4 — Building AI-Powered Backend Systems [FPT + Recipe]
+- LLM API integration
+- Streaming model responses
+- Structured outputs
+- Tool execution
+- Embeddings
+- Vector databases
+- Retrieval-Augmented Generation
+- Asynchronous inference
+- Long-running agent workflows
+- Agent execution state
+- Usage and cost management
+- Observability
+- Retry and recovery
+
+16.5 — Production Agent Infrastructure [FPT]
+- Isolated tool execution
+- Least-privilege permissions
+- Idempotent tool operations
+- Job orchestration
+- Persistent agent state
+- Approval workflows
+- Execution traces
+- Failure handling
+
+
+IMPLEMENTATION CONSTRAINTS
+- There are exactly 17 blocks, numbered 0 through 16.
+- Preserve every sub-block ID and title.
+- Preserve every topic listed under each sub-block.
+- Preserve each learning-mode assignment exactly.
+- Do not add curriculum topics, even if an AI model suggests them.
+- Keep curriculum data separate from learner progress and generated lesson content.
+- Use stable IDs derived from the numbering (for example, 0.1, 0.2, 1.1).
+- If lesson content is generated in batches, it must map to these existing IDs.
+- An incomplete lesson-content pass must never alter or truncate this syllabus.

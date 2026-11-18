@@ -1,0 +1,6 @@
+{
+  "name": "Backend Forge",
+  "description": "Personal backend engineering learning platform with First Principles Thinking, Recipe Mode, and Syntax Mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
