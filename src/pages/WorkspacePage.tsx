@@ -20,6 +20,10 @@ import { getSubBlockLessonContent } from '../content';
 import { AUTHORITATIVE_SYLLABUS, findSubBlockById } from '../curriculum';
 import { getMethodologyDefinition } from '../learning';
 import { useAppState } from '../persistence/AppStateContext';
+import {
+  computeSubBlockCompletionDetail,
+  summarizeUnitEvaluations,
+} from '../progress';
 import { LearningMethodology } from '../types';
 import { cn } from '../utilities';
 
@@ -65,6 +69,26 @@ export function WorkspacePage() {
   const status = subRecord?.status ?? 'not_started';
   const isFlaggedRevision = Boolean(subRecord?.needsRevision);
 
+  const unitCompletion = computeSubBlockCompletionDetail({
+    subBlock,
+    record: subRecord,
+    totalFptQuestions: lessonContent?.fpt?.questions.length ?? 0,
+    fptQuestionIds: lessonContent?.fpt?.questions.map((q) => q.id),
+    hasRecipeExercise: Boolean(lessonContent?.recipe?.exercise),
+    hasSyntaxExercise: Boolean(lessonContent?.syntax?.quickExercise),
+  });
+  const evalSummary = summarizeUnitEvaluations(
+    subBlock.id,
+    state.progress.evaluations
+  );
+  const spacedDaysRemaining =
+    subRecord?.revisionDueAt &&
+    (status === 'completed' || status === 'mastered')
+      ? Math.ceil(
+          (Date.parse(subRecord.revisionDueAt) - Date.now()) / 86_400_000
+        )
+      : null;
+
   // Ensure active methodology matches one of the sub-block's assigned modes
   const activeMode: LearningMethodology = subBlock.requiredModes.includes(
     state.progress.currentMethodology
@@ -101,6 +125,29 @@ export function WorkspacePage() {
               </span>
               <span aria-hidden="true">·</span>
               <span>Status: {status.replace('_', ' ')}</span>
+              <span aria-hidden="true">·</span>
+              <span className="tabular-nums font-medium text-slate-700 dark:text-slate-300">
+                Unit progress: {unitCompletion.percentage}% (
+                {unitCompletion.completedItems}/{unitCompletion.totalItems})
+              </span>
+              {evalSummary.averageScore !== null ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">
+                    Avg: {evalSummary.averageScore}/100
+                  </span>
+                </>
+              ) : null}
+              {spacedDaysRemaining !== null ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="tabular-nums text-slate-600 dark:text-slate-300">
+                    {spacedDaysRemaining > 0
+                      ? `Revision in ${spacedDaysRemaining}d`
+                      : 'Revision due now'}
+                  </span>
+                </>
+              ) : null}
             </div>
             <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               {subBlock.id} — {subBlock.title}

@@ -41,7 +41,7 @@ flowchart TD
 
 - **Zod-Validated State & Migrations (`src/persistence/`)**: All persisted state is validated against `persistedAppStateSchema` (`CURRENT_SCHEMA_VERSION = 3`). On load, `loadAppState()` automatically migrates legacy v1 and v2 payloads without data loss. Versioned JSON backups (`exportAppStateJson` / `importAppStateJson`) validate every `subBlockId` against `AUTHORITATIVE_SYLLABUS` before applying and explicitly exclude `groqApiKey`.
 - **Direct Client-Side AI Evaluation (`src/evaluation/groqEvaluator.ts`)**: When a Groq key is configured, FPT submissions call `https://api.groq.com/openai/v1/chat/completions` with `temperature: 0.2` and `response_format: { type: 'json_object' }` (and `reasoning_effort: 'low'` for `openai/gpt-oss*` models). Responses strip `<think>` blocks, extract JSON safely, and validate against `structuredEvaluationSchema` before updating progress.
-- **Deterministic Progression (`src/progress/progression.ts`)**: Unit status (`not_started`, `in_progress`, `completed`, `needs_review`, `mastered`, `skipped`) is derived deterministically from required learning modes, evaluation scores, and misconception counts (`>= 2` misconceptions triggers `needs_review`).
+- **Deterministic Progression (`src/progress/progression.ts`)**: Unit status (`not_started`, `in_progress`, `completed`, `needs_review`, `mastered`, `skipped`) is derived deterministically from required learning modes and evaluation scores (`>= 70` completes a unit, `>= 80` masters it, and spaced revision becomes due after 3–5 days without blocking completion progress).
 - **Theme Bootstrapping (`index.html`)**: An inline script in `<head>` reads `backend_forge_v1` from `localStorage` before first paint to apply the `dark` class without flash-of-unstylized-theme.
 
 ## Curriculum Overview
@@ -80,10 +80,10 @@ When AI evaluation is enabled, FPT responses are scored out of 100 across five w
 | Edge cases and trade-offs | 15 | Recognition of failure modes, boundaries, and trade-offs |
 | Clarity | 10 | Structured, unambiguous engineering communication |
 
-- **0–49**: Rebuild understanding (flagged for revision)
+- **0–49**: Rebuild understanding (flagged for immediate review)
 - **50–69**: Targeted follow-up (`needs_review`)
-- **70–84**: Progress with revision recommendation
-- **85–100**: Mastery-eligible (`mastered` once all required modes for the sub-block are complete)
+- **70–79**: Completed (`completed` once all required modes finish; spaced revision scheduled after 3 days)
+- **80–100**: Mastery-eligible (`mastered` once all required modes finish; spaced retention revision scheduled after 5 days)
 
 ## Tech Stack
 

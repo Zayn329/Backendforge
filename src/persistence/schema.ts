@@ -24,6 +24,7 @@ export const activityActionSchema = z.enum([
   'unit_completed',
   'unit_mastered',
   'unit_skipped',
+  'unit_revised',
   'study_timer_milestone',
   'marked_revision',
 ]);
@@ -52,6 +53,8 @@ export const subBlockProgressRecordSchema = z.object({
   misconceptionCount: z.number().int().nonnegative(),
   needsRevision: z.boolean(),
   revisionReason: z.string().optional(),
+  revisionDueAt: z.string().optional(),
+  lastRevisedAt: z.string().optional(),
   lastStudiedAt: z.string().nullable(),
   skippedAt: z.string().optional(),
   fptSession: fptSessionStateSchema.optional(),

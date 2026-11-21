@@ -23,6 +23,7 @@ import {
   computeProgressMetrics,
   getRecentActivity,
   getRevisionRecommendations,
+  getScheduledUpcomingRevisions,
 } from '../progress';
 import { formatRelativeTimestamp } from '../utilities';
 
@@ -50,6 +51,11 @@ export function DashboardPage() {
 
   const revisionQueue = useMemo(
     () => getRevisionRecommendations(state.progress),
+    [state.progress]
+  );
+
+  const upcomingRevisions = useMemo(
+    () => getScheduledUpcomingRevisions(state.progress),
     [state.progress]
   );
 
@@ -154,8 +160,10 @@ export function DashboardPage() {
           </div>
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
             {metrics.revisionUnitsCount === 0
-              ? '0 units flagged for revision'
-              : `${metrics.revisionUnitsCount} units recommended for revision`}
+              ? upcomingRevisions.length > 0
+                ? `${upcomingRevisions.length} scheduled for spaced revision`
+                : '0 units due for revision'
+              : `${metrics.revisionUnitsCount} unit(s) due for revision`}
           </p>
         </Panel>
       </div>
@@ -227,7 +235,7 @@ export function DashboardPage() {
         <Panel>
           <PanelHeader
             title="Revision Recommendations"
-            subtitle="Low scores, misconceptions, or unmastered units"
+            subtitle="Reviews below 70 or spaced-repetition units due after 3–5 days"
           />
           {revisionQueue.length > 0 ? (
             <ul className="divide-y divide-slate-200 dark:divide-slate-800/80">
@@ -268,7 +276,11 @@ export function DashboardPage() {
             <EmptyState
               icon={RotateCcw}
               title="Revision queue is clear"
-              description="Units scoring below mastery (85+), showing misconceptions, or flagged manually will appear here."
+              description={
+                upcomingRevisions.length > 0
+                  ? `Next spaced revision (${upcomingRevisions[0].subBlockId}) becomes available in ${upcomingRevisions[0].daysUntilDue} day(s). Units scoring 80+ achieve mastery while staying in spaced rotation.`
+                  : 'Units scoring below 70, manually flagged items, or completed/mastered units due after 3–5 days will appear here.'
+              }
             />
           )}
         </Panel>

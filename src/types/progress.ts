@@ -18,6 +18,7 @@ export type ActivityAction =
   | 'unit_completed'
   | 'unit_mastered'
   | 'unit_skipped'
+  | 'unit_revised'
   | 'study_timer_milestone'
   | 'marked_revision';
 
@@ -46,6 +47,8 @@ export interface SubBlockProgressRecord {
   misconceptionCount: number;
   needsRevision: boolean;
   revisionReason?: string;
+  revisionDueAt?: string;
+  lastRevisedAt?: string;
   lastStudiedAt: string | null;
   skippedAt?: string;
   fptSession?: FptSessionState;

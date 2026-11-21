@@ -6,7 +6,7 @@ import {
   Search,
 } from 'lucide-react';
 import { EmptyState, Panel } from '../components';
-import { hasLessonContent } from '../content';
+import { getSubBlockLessonContent, hasLessonContent } from '../content';
 import {
   ALL_LEARNING_MODE_ASSIGNMENTS,
   AUTHORITATIVE_SYLLABUS,
@@ -14,6 +14,7 @@ import {
   getCurriculumCounts,
 } from '../curriculum';
 import { useAppState } from '../persistence/AppStateContext';
+import { computeSubBlockCompletionDetail } from '../progress';
 import { LearningModeAssignment, SubBlockProgressStatus } from '../types';
 import { cn } from '../utilities';
 
@@ -222,6 +223,26 @@ export function CurriculumPage() {
               return st === 'completed' || st === 'mastered';
             }).length;
 
+            const blockPct =
+              block.subBlocks.length > 0
+                ? Math.round(
+                    block.subBlocks.reduce((acc, sb) => {
+                      const lesson = getSubBlockLessonContent(sb.id);
+                      const detail = computeSubBlockCompletionDetail({
+                        subBlock: sb,
+                        record: state.progress.subBlocks[sb.id],
+                        totalFptQuestions: lesson?.fpt?.questions.length ?? 0,
+                        fptQuestionIds: lesson?.fpt?.questions.map((q) => q.id),
+                        hasRecipeExercise: Boolean(lesson?.recipe?.exercise),
+                        hasSyntaxExercise: Boolean(
+                          lesson?.syntax?.quickExercise
+                        ),
+                      });
+                      return acc + detail.percentage;
+                    }, 0) / block.subBlocks.length
+                  )
+                : 0;
+
             return (
               <Panel key={block.id} className="overflow-hidden">
                 <button
@@ -243,7 +264,8 @@ export function CurriculumPage() {
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
                         {block.subBlocks.length} sub-blocks{' '}
                         <span aria-hidden="true">·</span> {blockCompleted} /{' '}
-                        {block.subBlocks.length} finished
+                        {block.subBlocks.length} finished{' '}
+                        <span aria-hidden="true">·</span> {blockPct}% progress
                       </p>
                     </div>
                   </div>
@@ -262,6 +284,22 @@ export function CurriculumPage() {
                       const isActive =
                         state.progress.currentSubBlockId === subBlock.id;
                       const populated = hasLessonContent(subBlock.id);
+                      const subLesson = getSubBlockLessonContent(subBlock.id);
+                      const subDetail = computeSubBlockCompletionDetail({
+                        subBlock,
+                        record,
+                        totalFptQuestions:
+                          subLesson?.fpt?.questions.length ?? 0,
+                        fptQuestionIds: subLesson?.fpt?.questions.map(
+                          (q) => q.id
+                        ),
+                        hasRecipeExercise: Boolean(
+                          subLesson?.recipe?.exercise
+                        ),
+                        hasSyntaxExercise: Boolean(
+                          subLesson?.syntax?.quickExercise
+                        ),
+                      });
 
                       return (
                         <div
@@ -297,6 +335,14 @@ export function CurriculumPage() {
                                   <span className={statusMeta.className}>
                                     {statusMeta.label}
                                   </span>
+                                  {subDetail.percentage > 0 ? (
+                                    <>
+                                      <span aria-hidden="true">·</span>
+                                      <span className="text-slate-700 dark:text-slate-300 font-medium">
+                                        {subDetail.percentage}%
+                                      </span>
+                                    </>
+                                  ) : null}
                                   {populated ? (
                                     <>
                                       <span aria-hidden="true">·</span>

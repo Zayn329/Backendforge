@@ -86,6 +86,7 @@ interface AppStateContextValue {
     needsRevision: boolean,
     reason?: string
   ) => void;
+  markUnitRevised: (subBlockId: string) => void;
   // Study timer
   timerElapsedSeconds: number;
   startStudyTimer: (subBlockId: string) => void;
@@ -226,32 +227,79 @@ function appendActivityLog(
 
 function recomputeRecordStatus(
   subBlockId: string,
-  record: SubBlockProgressRecord
+  record: SubBlockProgressRecord,
+  evaluations?: EvaluationHistoryRecord[]
 ): SubBlockProgressRecord {
   const found = findSubBlockById(subBlockId, AUTHORITATIVE_SYLLABUS);
   if (!found) return record;
   const lesson = getSubBlockLessonContent(subBlockId);
   const fptQuestions = lesson?.fpt?.questions ?? [];
+
+  let normalizedModes = record.completedModes;
+  if (
+    fptQuestions.length > 0 &&
+    fptQuestions.every((q) =>
+      Boolean(record.fptSession?.submittedAnswers[q.id])
+    ) &&
+    !normalizedModes.includes('fpt')
+  ) {
+    normalizedModes = [...normalizedModes, 'fpt'];
+  }
+
+  const normalizedRecord: SubBlockProgressRecord = {
+    ...record,
+    completedModes: normalizedModes,
+  };
+
   const derived = deriveDeterministicStatus({
     subBlock: found.subBlock,
-    record,
+    record: normalizedRecord,
     totalFptQuestions: fptQuestions.length,
     fptQuestionIds: fptQuestions.map((q) => q.id),
     hasRecipeExercise: Boolean(lesson?.recipe?.exercise),
     hasSyntaxExercise: Boolean(lesson?.syntax?.quickExercise),
+    unitEvaluations: evaluations,
   });
+
   return {
-    ...record,
+    ...normalizedRecord,
     status: derived.status,
+    misconceptionCount: evaluations
+      ? derived.unresolvedMisconceptionCount
+      : normalizedRecord.misconceptionCount,
     needsRevision: derived.needsRevision,
     revisionReason: derived.revisionReason,
+    revisionDueAt: derived.revisionDueAt,
+  };
+}
+
+function reconcileProgressState(
+  progress: PersistedAppState['progress']
+): PersistedAppState['progress'] {
+  const reconciledSubBlocks: Record<string, SubBlockProgressRecord> = {};
+  for (const [subBlockId, record] of Object.entries(progress.subBlocks)) {
+    reconciledSubBlocks[subBlockId] = recomputeRecordStatus(
+      subBlockId,
+      record,
+      progress.evaluations
+    );
+  }
+  return {
+    ...progress,
+    subBlocks: reconciledSubBlocks,
   };
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<PersistedAppState>(() => loadAppState());
+  const [state, setState] = useState<PersistedAppState>(() => {
+    const loaded = loadAppState();
+    return {
+      ...loaded,
+      progress: reconcileProgressState(loaded.progress),
+    };
+  });
   const [activeSection, setActiveSection] = useState<AppSection>(() =>
     readSectionFromHash()
   );
@@ -503,13 +551,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               ? evaluation.score
               : Math.max(existing.highestScore, evaluation.score);
           nextEvalCount += 1;
-          if (evaluation.misconceptions.length > 0) {
+          if (evaluation.misconceptions.length > 0 && evaluation.score < 80) {
             nextMisconceptions += 1;
           }
           const threshold = classifyScoreThreshold(evaluation.score);
           if (threshold.shouldFlagRevision) {
             nextNeedsRevision = true;
             nextRevisionReason = threshold.revisionReason;
+          } else if (
+            existing.needsRevision &&
+            !existing.revisionReason?.toLowerCase().includes('manual')
+          ) {
+            nextNeedsRevision = false;
+            nextRevisionReason = undefined;
           }
 
           const historyItem: EvaluationHistoryRecord = {
@@ -532,51 +586,37 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         const baseStatus =
           existing.status === 'skipped' ? 'in_progress' : existing.status;
 
-        const updatedRecord = recomputeRecordStatus(subBlockId, {
-          ...existing,
-          status: baseStatus,
-          latestScore: nextScore,
-          highestScore: nextHighest,
-          evaluationCount: nextEvalCount,
-          misconceptionCount: nextMisconceptions,
-          needsRevision: nextNeedsRevision,
-          revisionReason: nextRevisionReason,
-          lastStudiedAt: nowIso,
-          fptSession: {
-            ...session,
-            submittedAnswers: {
-              ...session.submittedAnswers,
-              [questionId]: answer,
+        const updatedRecord = recomputeRecordStatus(
+          subBlockId,
+          {
+            ...existing,
+            status: baseStatus,
+            latestScore: nextScore,
+            highestScore: nextHighest,
+            evaluationCount: nextEvalCount,
+            misconceptionCount: nextMisconceptions,
+            needsRevision: nextNeedsRevision,
+            revisionReason: nextRevisionReason,
+            lastStudiedAt: nowIso,
+            fptSession: {
+              ...session,
+              submittedAnswers: {
+                ...session.submittedAnswers,
+                [questionId]: answer,
+              },
+              draftAnswers: {
+                ...session.draftAnswers,
+                [questionId]: answer,
+              },
+              skippedQuestionIds: skippedQ,
+              completedQuestionIds: completedQ,
+              updatedAt: nowIso,
             },
-            draftAnswers: {
-              ...session.draftAnswers,
-              [questionId]: answer,
-            },
-            skippedQuestionIds: skippedQ,
-            completedQuestionIds: completedQ,
-            updatedAt: nowIso,
           },
-        });
+          nextEvaluations
+        );
 
-        // If all FPT questions in current lesson are answered, mark 'fpt' mode complete
-        const lesson = getSubBlockLessonContent(subBlockId);
-        const fptQuestions = lesson?.fpt?.questions ?? [];
-        const allFptQuestionsAnswered =
-          fptQuestions.length > 0 &&
-          fptQuestions.every((q) =>
-            Boolean(updatedRecord.fptSession?.submittedAnswers[q.id])
-          );
-        if (
-          allFptQuestionsAnswered &&
-          !updatedRecord.completedModes.includes('fpt')
-        ) {
-          updatedRecord.completedModes = [
-            ...updatedRecord.completedModes,
-            'fpt',
-          ];
-        }
-
-        const finalizedRecord = recomputeRecordStatus(subBlockId, updatedRecord);
+        const finalizedRecord = updatedRecord;
         const label = questionLabel ?? questionId;
 
         return {
@@ -773,13 +813,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         const baseStatus =
           existing.status === 'skipped' ? 'in_progress' : existing.status;
 
-        const updatedRecord = recomputeRecordStatus(subBlockId, {
-          ...existing,
-          status: baseStatus,
-          completedExerciseIds: nextExercises,
-          completedModes: nextModes,
-          lastStudiedAt: nowIso,
-        });
+        const updatedRecord = recomputeRecordStatus(
+          subBlockId,
+          {
+            ...existing,
+            status: baseStatus,
+            completedExerciseIds: nextExercises,
+            completedModes: nextModes,
+            lastStudiedAt: nowIso,
+          },
+          prev.progress.evaluations
+        );
 
         return {
           ...prev,
@@ -877,10 +921,28 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const toggleManualRevisionFlag = useCallback(
     (subBlockId: string, needsRevision: boolean, reason?: string) => {
+      const nowIso = new Date().toISOString();
       setState((prev) => {
         const existing =
           prev.progress.subBlocks[subBlockId] ??
           createEmptySubBlockRecord(subBlockId);
+
+        const patchedRecord: SubBlockProgressRecord = {
+          ...existing,
+          needsRevision,
+          revisionReason: needsRevision
+            ? reason ?? 'Manually flagged for revision'
+            : undefined,
+          revisionDueAt: needsRevision ? nowIso : undefined,
+        };
+
+        const finalRecord = needsRevision
+          ? patchedRecord
+          : recomputeRecordStatus(
+              subBlockId,
+              patchedRecord,
+              prev.progress.evaluations
+            );
 
         return {
           ...prev,
@@ -888,17 +950,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             ...prev.progress,
             subBlocks: {
               ...prev.progress.subBlocks,
-              [subBlockId]: {
-                ...existing,
-                needsRevision,
-                revisionReason: needsRevision
-                  ? reason ?? 'Manually flagged for revision'
-                  : undefined,
-                status:
-                  needsRevision && existing.status === 'completed'
-                    ? 'needs_review'
-                    : existing.status,
-              },
+              [subBlockId]: finalRecord,
             },
             activityLog: needsRevision
               ? appendActivityLog(prev.progress.activityLog, {
@@ -914,6 +966,50 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     },
     []
   );
+
+  const markUnitRevised = useCallback((subBlockId: string) => {
+    const nowIso = new Date().toISOString();
+    setState((prev) => {
+      const existing =
+        prev.progress.subBlocks[subBlockId] ??
+        createEmptySubBlockRecord(subBlockId);
+
+      const updated = recomputeRecordStatus(
+        subBlockId,
+        {
+          ...existing,
+          needsRevision: false,
+          revisionReason: undefined,
+          revisionDueAt: undefined,
+          lastRevisedAt: nowIso,
+          lastStudiedAt: nowIso,
+        },
+        prev.progress.evaluations
+      );
+
+      return {
+        ...prev,
+        progress: {
+          ...prev.progress,
+          subBlocks: {
+            ...prev.progress.subBlocks,
+            [subBlockId]: updated,
+          },
+          dailyActivity: recordDailyActivity(
+            prev.progress.dailyActivity,
+            subBlockId,
+            { qualifying: true }
+          ),
+          activityLog: appendActivityLog(prev.progress.activityLog, {
+            subBlockId,
+            methodology: prev.progress.currentMethodology,
+            action: 'unit_revised',
+            summary: `Completed spaced revision for ${subBlockId}`,
+          }),
+        },
+      };
+    });
+  }, []);
 
   const startStudyTimer = useCallback((subBlockId: string) => {
     const now = Date.now();
@@ -1078,7 +1174,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }) => {
       setState((prev) => ({
         ...prev,
-        progress: data.progress,
+        progress: reconcileProgressState(data.progress),
         settings: {
           ...prev.settings,
           ...data.preferences,
@@ -1111,6 +1207,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       saveSubBlockNotes,
       skipSubBlock,
       toggleManualRevisionFlag,
+      markUnitRevised,
       timerElapsedSeconds,
       startStudyTimer,
       pauseStudyTimer,
@@ -1143,6 +1240,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       saveSubBlockNotes,
       skipSubBlock,
       toggleManualRevisionFlag,
+      markUnitRevised,
       timerElapsedSeconds,
       startStudyTimer,
       pauseStudyTimer,
